@@ -46,14 +46,43 @@
         const urlParams = new URLSearchParams(window.location.search);
         const eventName = urlParams.get('name');
         const eventTimezone = urlParams.get('timezone');
-        const eventTime = new Date(urlParams.get('time')).getTime();
+        const eventTimeStr = urlParams.get('time');
+
+        // Create a date object from the UTC time
+        const utcDate = new Date(eventTimeStr);
+        
+        // Format the time in the original timezone
+        const originalFormatter = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+            timeZone: eventTimezone
+        });
+
+        // Get the local timezone
+        const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        // Format the time in local timezone
+        const localFormatter = new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+            timeZone: localTimezone
+        });
 
         document.getElementById('event-name').textContent = `Event Name: ${decodeURIComponent(eventName)}`;
-        document.getElementById('event-time').textContent = `Event Time: ${new Date(eventTime).toLocaleString('en-US', { timeZone: eventTimezone })}`;
+        document.getElementById('event-time').textContent = `Original Time: ${originalFormatter.format(utcDate)} (${eventTimezone})\n`;
+        document.getElementById('event-time').textContent += `Your Local Time: ${localFormatter.format(utcDate)} (${localTimezone})`;
 
         function updateCountdown() {
             const now = new Date().getTime();
-            const timeLeft = eventTime - now;
+            const timeLeft = utcDate.getTime() - now;
 
             if (timeLeft <= 0) {
                 document.getElementById('countdown').textContent = 'Event Started!';
