@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Countdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0377A3;
+            color: #fff;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+        }
+        p {
+            font-size: 1.5rem;
+            margin: 20px 0;
+        }
+        .countdown {
+            font-size: 2rem;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="event-name">Event Name: Loading...</h1>
+        <p id="event-time">Event Time: Loading...</p>
+        <p class="countdown" id="countdown">--:--:--</p>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventName = urlParams.get('name');
+        const eventTimezone = urlParams.get('timezone');
+        const eventTime = new Date(urlParams.get('time')).getTime();
+
+        document.getElementById('event-name').textContent = `Event Name: ${decodeURIComponent(eventName)}`;
+        document.getElementById('event-time').textContent = `Event Time: ${new Date(eventTime).toLocaleString('en-US', { timeZone: eventTimezone })}`;
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const timeLeft = eventTime - now;
+
+            if (timeLeft <= 0) {
+                document.getElementById('countdown').textContent = 'Event Started!';
+                clearInterval(countdownInterval);
+            } else {
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                document.getElementById('countdown').textContent = `${hours}h ${minutes}m ${seconds}s`;
+            }
+        }
+
+        const countdownInterval = setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
