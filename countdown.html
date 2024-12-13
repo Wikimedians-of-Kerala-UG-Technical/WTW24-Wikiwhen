@@ -3,182 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wikiwhen: Countdown Timer with Timezone</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+    <title>Wikiwhen: Countdown Timer</title>
     <style>
         body {
-            font-family: 'Raleway', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
-            background-size: 400% 400%;
-            animation: gradientBG 10s ease infinite;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
-            width: 100%;
+            font-family: Arial, sans-serif;
             text-align: center;
+            padding: 20px;
         }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        h3 {
-            font-size: 1.25rem;
-            margin-bottom: 20px;
-            color: #555;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: stretch;
-            margin-bottom: 20px;
-        }
-
-        input, button, select {
-            font-size: 1rem;
-            padding: 12px;
-            border: 1px solid #ddd;
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
             border-radius: 10px;
-            outline: none;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-
-        button {
-            background: #4caf50;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            transition: background 0.3s, transform 0.3s;
+        input, button, select {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+            width: 90%;
         }
-
-        button:hover {
-            background: #43a047;
-            transform: translateY(-2px);
-        }
-
         #countdown {
             margin-top: 20px;
-            font-size: 2rem;
+            font-size: 24px;
             font-weight: bold;
-            color: #4caf50;
+            color: #4CAF50;
         }
-
-        #unique-url {
-            word-wrap: break-word;
-            word-break: break-word;
-            font-size: 0.9rem;
-            margin-top: 20px;
-            background-color: #f7f7f7;
-            padding: 10px;
-            border-radius: 8px;
-            color: #333;
-            text-align: left;
-        }
-
         #unique-url a {
-            color: #4caf50;
+            color: #1E88E5;
             text-decoration: none;
-            font-weight: bold;
-        }
-
-        #unique-url a:hover {
-            color: #388e3c;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.34/moment-timezone.min.js"></script>
 </head>
 <body>
+    <h1>Wikiwhen: Countdown Timer</h1>
     <div class="container" id="create-event-container">
-        <h1>Wikiwhen</h1>
-        <h3>Create a Countdown Event</h3>
-        <div class="form-group">
-            <input type="text" id="event-name" placeholder="Event Name">
-            <input type="datetime-local" id="event-time">
-            <select id="timezone">
-                <option value="" disabled selected>Select Timezone</option>
-            </select>
-        </div>
+        <h3>Create an Event</h3>
+        <input type="text" id="event-name" placeholder="Event Name" />
+        <input type="datetime-local" id="event-time" />
+        <select id="timezone">
+            <option value="">Select Timezone</option>
+            <option value="Asia/Kolkata">Asia/Kolkata (India)</option>
+            <option value="Europe/London">Europe/London (UK)</option>
+            <option value="America/New_York">America/New_York (US)</option>
+        </select>
         <button id="create-event-button">Create Event</button>
-        <div id="unique-url"></div>
+        <p id="unique-url"></p>
     </div>
 
     <div class="container" id="countdown-container" style="display: none;">
         <h3>Countdown to: <span id="event-title"></span></h3>
         <div id="countdown"></div>
+        <p id="local-time"></p>
     </div>
 
     <script>
-        // Populate timezone dropdown
-        const timezoneSelect = document.getElementById('timezone');
-        moment.tz.names().forEach(tz => {
-            const option = document.createElement('option');
-            option.value = tz;
-            option.textContent = tz;
-            timezoneSelect.appendChild(option);
-        });
-
-        // Function to create event
+        // Function to create a unique event URL
         function createEvent() {
             const eventName = document.getElementById('event-name').value.trim();
             const eventDateTime = document.getElementById('event-time').value;
             const timezone = document.getElementById('timezone').value;
 
+            // Validate input fields
             if (!eventName || !eventDateTime || !timezone) {
                 alert('Please fill in all fields!');
                 return;
             }
 
-            const eventData = JSON.stringify({ name: eventName, time: eventDateTime, tz: timezone });
-            const encodedEventData = btoa(eventData);
-            const uniqueURL = `${window.location.protocol}//${window.location.host}${window.location.pathname}?event=${encodedEventData}`;
+            try {
+                // Encode event details into base64 (proper format)
+                const eventData = JSON.stringify({ name: eventName, time: eventDateTime, timezone });
+                const encodedEventData = btoa(eventData); // Base64 encode the data
+                
+                // Correct base URL (replace 'localhost' with your actual domain if deployed)
+                const baseURL = window.location.protocol + '//' + window.location.host; // This ensures it's dynamic
+                const uniqueURL = `${baseURL}${window.location.pathname}?event=${encodedEventData}`;
 
-            document.getElementById('unique-url').innerHTML = `Your Event Link: <a href="${uniqueURL}" target="_blank">${uniqueURL}</a>`;
+                // Display the generated URL
+                const urlElement = document.getElementById('unique-url');
+                urlElement.innerHTML = `Your Event Link: <a href="${uniqueURL}" target="_blank">${uniqueURL}</a>`;
+            } catch (error) {
+                console.error('Error generating URL:', error);
+                alert('An error occurred while generating the event URL.');
+            }
         }
 
-        // Parse event data from URL
+        // Function to parse event data from URL
         function getEventFromURL() {
             const params = new URLSearchParams(window.location.search);
             const event = params.get('event');
             if (event) {
-                const eventData = JSON.parse(atob(event));
-                document.getElementById('event-title').textContent = eventData.name;
+                try {
+                    const eventData = JSON.parse(atob(event)); // Decode from base64 and parse JSON
+                    document.getElementById('event-title').textContent = eventData.name;
 
-                const eventMoment = moment.tz(eventData.time, eventData.tz);
-                startCountdown(eventMoment);
+                    const eventTime = new Date(eventData.time);
+                    const timezone = eventData.timezone;
 
-                document.getElementById('countdown-container').style.display = 'block';
-                document.getElementById('create-event-container').style.display = 'none';
+                    // Adjust event time based on timezone
+                    const eventTimeInLocal = new Date(eventTime.toLocaleString('en-US', { timeZone: timezone }));
+
+                    // Show event's local time
+                    document.getElementById('local-time').textContent =
+                        `Event Time in ${timezone}: ${eventTimeInLocal.toLocaleString()}`;
+
+                    // Start the countdown
+                    startCountdown(eventTimeInLocal.getTime());
+                    document.getElementById('countdown-container').style.display = 'block';
+                    document.getElementById('create-event-container').style.display = 'none';
+                } catch (error) {
+                    console.error('Error decoding event data:', error);
+                    alert('Invalid event data in the URL.');
+                }
             }
         }
 
-        // Countdown logic
-        function startCountdown(eventMoment) {
+        // Start the countdown timer
+        function startCountdown(eventTime) {
             const countdownElement = document.getElementById('countdown');
             const interval = setInterval(() => {
-                const now = moment();
-                const diff = eventMoment.diff(now);
+                const now = new Date().getTime();
+                const diff = eventTime - now;
 
                 if (diff <= 0) {
                     countdownElement.textContent = 'The event has started!';
@@ -186,12 +132,19 @@
                     return;
                 }
 
-                const duration = moment.duration(diff);
-                countdownElement.textContent = `${duration.days()}d ${duration.hours()}h ${duration.minutes()}m ${duration.seconds()}s`;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
             }, 1000);
         }
 
+        // Attach event listener to "Create Event" button
         document.getElementById('create-event-button').addEventListener('click', createEvent);
+
+        // Load event data from URL on page load
         document.addEventListener('DOMContentLoaded', getEventFromURL);
     </script>
 </body>
