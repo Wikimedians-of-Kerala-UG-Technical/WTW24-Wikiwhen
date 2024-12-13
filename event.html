@@ -33,6 +33,18 @@
             font-size: 2rem;
             margin: 20px 0;
         }
+        .countdown-details {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-family: monospace;
+        }
+        .countdown-details span {
+            min-width: 60px;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -48,54 +60,67 @@
         const eventTimezone = urlParams.get('timezone');
         const eventTimeStr = urlParams.get('time');
 
-        // Create a date object from the UTC time
-        const utcDate = new Date(eventTimeStr);
-        
-        // Format the time in the original timezone
-        const originalFormatter = new Intl.DateTimeFormat('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true,
-            timeZone: eventTimezone
-        });
+        // Create a Date object from the input time (which is in UTC)
+        const eventDate = new Date(eventTimeStr);
+
+        // Function to format time in 12-hour format with timezone
+        function formatTime(date, timezone) {
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: true,
+                timeZone: timezone
+            });
+            return formatter.format(date);
+        }
 
         // Get the local timezone
         const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-        // Format the time in local timezone
-        const localFormatter = new Intl.DateTimeFormat('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true,
-            timeZone: localTimezone
-        });
+        // Format times in different timezones
+        const originalTime = formatTime(eventDate, eventTimezone);
+        const localTime = formatTime(eventDate, localTimezone);
 
+        // Display event details
         document.getElementById('event-name').textContent = `Event Name: ${decodeURIComponent(eventName)}`;
-        document.getElementById('event-time').textContent = `Original Time: ${originalFormatter.format(utcDate)} (${eventTimezone})\n`;
-        document.getElementById('event-time').textContent += `Your Local Time: ${localFormatter.format(utcDate)} (${localTimezone})`;
+        document.getElementById('event-time').innerHTML = 
+            `Original Time: ${localTime} (${eventTimezone})<br>` +
+            `Your Local Time: ${originalTime} (${localTimezone})<br>`;
 
         function updateCountdown() {
-            const now = new Date().getTime();
-            const timeLeft = utcDate.getTime() - now;
+            // Get current time in local timezone
+            const now = new Date();
+            
+            // Calculate time difference
+            const timeLeft = eventDate.getTime() - now.getTime();
 
             if (timeLeft <= 0) {
                 document.getElementById('countdown').textContent = 'Event Started!';
                 clearInterval(countdownInterval);
             } else {
-                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                document.getElementById('countdown').textContent = `${hours}h ${minutes}m ${seconds}s`;
+                const milliseconds = Math.floor(timeLeft % 1000);
+
+                document.getElementById('countdown').innerHTML = 
+                    `<div class="countdown-details">
+                        <span>${String(days).padStart(2, '0')}d</span>
+                        <span>${String(hours).padStart(2, '0')}h</span>
+                        <span>${String(minutes).padStart(2, '0')}m</span>
+                        <span>${String(seconds).padStart(2, '0')}s</span>
+                        <span>${String(milliseconds).padStart(3, '0')}ms</span>
+                    </div>`;
             }
         }
 
-        const countdownInterval = setInterval(updateCountdown, 1000);
+        // Update countdown more frequently to show milliseconds
+        const countdownInterval = setInterval(updateCountdown, 10);
     </script>
 </body>
 </html>
