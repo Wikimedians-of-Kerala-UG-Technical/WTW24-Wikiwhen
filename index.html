@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Timer - Wikimedia</title>
+    <style>
+        :root {
+            --wikimedia-blue: #0377A3;
+            --wikimedia-yellow: #F0BC00;
+            --wikimedia-gray: #54595d;
+        }
+
+        body {
+            font-family: 'Linux Libertine', 'Georgia', 'Times', serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(rgba(3, 119, 163, 0.9), rgba(3, 119, 163, 0.9)),
+                        url('https://upload.wikimedia.org/wikipedia/commons/4/4b/World_map_with_points.svg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: #202122;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: rgba(3, 119, 163, 0.95);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wiki-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 800px;
+            margin: 6rem auto 2rem auto;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: var(--wikimedia-blue);
+            text-align: center;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--wikimedia-gray);
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .form-group {
+            margin: 1.5rem 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--wikimedia-gray);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #a2a9b1;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--wikimedia-yellow);
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #d4a600;
+        }
+
+        .output {
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px solid rgba(162, 169, 177, 0.5);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        footer {
+            background-color: rgba(32, 33, 34, 0.95);
+            color: white;
+            padding: 2rem 0;
+            margin-top: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin: 5rem 1rem 1rem 1rem;
+                padding: 1rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Add pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkE3MTY1MDY1NjQ4MTFFQjk0QjVBRTk1MDg4ODc5RjQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkE3MTY1MDc1NjQ4MTFFQjk0QjVBRTk1MDg4ODc5RjQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpGQTcxNjUwNDU2NDgxMUVCOTRCNUFFOTUwODg4NzlGNCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpGQTcxNjUwNTU2NDgxMUVCOTRCNUFFOTUwODg4NzlGNCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PnqTKvMAAABISURBVHjaYmRgYPjPwMDwn5GRkQEIQAQjAwOQZgJiEAtkA1kgNhOIBrFZgGwQmxXIBrHZgGwQmx3IBrE5gGwQmxPIBrG5AAIMAMbCB3YROSbeAAAAAElFTkSuQmCC');
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="#" class="wiki-logo">WikiWhen</a>
+            <nav class="footer-links">
+                <a href="https://www.wikimedia.org/">Wikimedia</a>
+                <a href="https://meta.wikimedia.org/">Meta-Wiki</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <h1 id="time-display">--:-- --</h1>
+        <h2 id="date-display">Loading...</h2>
+
+        <div class="form-group">
+            <label for="timezone">Select Timezone:</label>
+            <select id="timezone"></select>
+        </div>
+
+        <div class="form-group">
+            <label for="event-name">Event Name:</label>
+            <input type="text" id="event-name" placeholder="Enter event name">
+        </div>
+
+        <div class="form-group">
+            <label for="event-datetime">Select Event Date and Time:</label>
+            <input type="datetime-local" id="event-datetime">
+        </div>
+
+        <button id="create-event">Create Event</button>
+
+        <div id="output" class="output" style="display: none;">
+            <p>Your Event is Ready!</p>
+            <a id="calendar-link" href="#" download>Download Calendar File</a>
+            <p>Event URL: <a id="event-url" href="#" target="_blank">View Event</a></p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div>© 2024 WikiWhen. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="https://foundation.wikimedia.org/">Wikimedia Foundation</a>
+                <a href="https://www.mediawiki.org/">MediaWiki</a>
+                <a href="https://commons.wikimedia.org/">Commons</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const timeDisplay = document.getElementById('time-display');
+        const dateDisplay = document.getElementById('date-display');
+        const timezoneSelector = document.getElementById('timezone');
+        const createEventButton = document.getElementById('create-event');
+        const output = document.getElementById('output');
+        const calendarLink = document.getElementById('calendar-link');
+        const eventUrlLink = document.getElementById('event-url');
+
+        // Populate timezone dropdown
+        const timezones = Intl.supportedValuesOf('timeZone');
+        timezones.forEach(tz => {
+            const option = document.createElement('option');
+            option.value = tz;
+            option.textContent = tz;
+            timezoneSelector.appendChild(option);
+        });
+
+        // Update time
+        function updateTime() {
+            const selectedTimezone = timezoneSelector.value || Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const currentTime = new Date();
+
+            // Local time
+            const options = { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true, timeZone: selectedTimezone };
+            timeDisplay.textContent = new Intl.DateTimeFormat('en-US', options).format(currentTime);
+
+            // Local date
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', timeZone: selectedTimezone };
+            dateDisplay.textContent = new Intl.DateTimeFormat('en-US', dateOptions).format(currentTime);
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Create Event and Add to Calendar
+        createEventButton.addEventListener('click', () => {
+            const eventName = document.getElementById('event-name').value.trim();
+            const eventDatetime = document.getElementById('event-datetime').value;
+            const selectedTimezone = timezoneSelector.value || Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            if (!eventName || !eventDatetime) {
+                alert('Please enter both event name and event date/time.');
+                return;
+            }
+
+            // Parse the input datetime
+            const [datePart, timePart] = eventDatetime.split('T');
+            const [year, month, day] = datePart.split('-');
+            const [hour, minute] = timePart.split(':');
+
+            // Create a date string that represents the time in the selected timezone
+            const eventDateString = `${year}-${month}-${day}T${hour}:${minute}:00`;
+            
+            // Create a date object in the selected timezone
+            const date = new Date(eventDateString);
+
+            // Adjust the date for the selected timezone
+            const selectedTZOffset = new Date(date.toLocaleString('en-US', { timeZone: selectedTimezone })).getTimezoneOffset();
+            const localTZOffset = date.getTimezoneOffset();
+            const offsetDiff = selectedTZOffset - localTZOffset;
+            const adjustedDate = new Date(date.getTime() + offsetDiff * 60000);
+
+            // Format the original time (keeping it exactly as entered)
+            const originalFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: selectedTimezone,
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+
+            // Get local timezone
+            const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            // Convert to local time using the adjusted date
+            const localFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: localTimezone,
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+
+            const originalTime = originalFormatter.format(date);
+            const localTime = localFormatter.format(adjustedDate);
+
+            // Generate sharable event URL with the original time
+            const encodedEventName = encodeURIComponent(eventName);
+            const encodedTimezone = encodeURIComponent(selectedTimezone);
+            const encodedDate = encodeURIComponent(date.toISOString());
+            const eventUrl = `event.html?name=${encodedEventName}&timezone=${encodedTimezone}&time=${encodedDate}`;
+
+            // Update output section content
+            output.innerHTML = `
+                <p>Your Event is Ready!</p>
+                <p>Event: ${eventName}</p>
+                <p>Original Time: ${localTime} (${selectedTimezone})</p>
+                <p>Your Local Time: ${originalFormatter.format(date)} (${localTimezone})</p>
+                <a id="calendar-link" href="#" download>Download Calendar File</a>
+                <p>Event URL: <a id="event-url" href="${eventUrl}" target="_blank">${eventUrl}</a></p>
+            `;
+
+            // Create ICS content with the original time
+            const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+SUMMARY:${eventName}
+DTSTART:${date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '')}
+DTEND:${new Date(date.getTime() + 3600000).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '')}
+DESCRIPTION:Event created with Event Timer
+LOCATION:Timezone - ${selectedTimezone}
+END:VEVENT
+END:VCALENDAR`;
+
+            // Create downloadable link for calendar file
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            calendarLink.href = URL.createObjectURL(blob);
+            calendarLink.download = `${eventName.replace(/\s+/g, '_')}.ics`;
+
+            // Show output section
+            output.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
